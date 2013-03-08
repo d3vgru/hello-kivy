@@ -4,9 +4,11 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.app import App
 from kivy.properties import ObjectProperty, StringProperty
 
-import os, socket, string, sys, tempfile, thread, time #, unittest
-from M2Crypto import Rand, SSL, m2, Err
+import os
+import M2Crypto
 
+def empty_callback ():
+ return
 
 class Controller(FloatLayout):
     '''Create a controller that receives a custom widget from the kv lang file.
@@ -20,12 +22,22 @@ class Controller(FloatLayout):
 
     # handle button press
     def do_action(self):
-	    #TODO some M2Crypto stuff that sets moreinfo
-    	self.moreinfo = 'Change to this'
-
-        self.label_wid.text = 'My label after button press'
-        self.otherlabel_wid.text = self.moreinfo
-        self.info = 'New info text'
+		M2Crypto.Rand.rand_seed (os.urandom (1024))
+		priv = "adfsdfsdfsdfsd"
+		pub = "dfdffffffffffffffff"
+		combinedkey = priv + '\n' + pub
+		# You don’t need these for this code, but they’re faster in other instances
+		privkey_bio = M2Crypto.BIO.MemoryBuffer(priv.encode('utf8'))
+		pubkey_bio = M2Crypto.BIO.MemoryBuffer(pub.encode('utf8'))
+		combinedkey_bio = M2Crypto.BIO.MemoryBuffer(combinedkey)
+		SignEVP = M2Crypto.EVP.load_key_string(combinedkey)
+		SignEVP.sign_init()
+		SignEVP.sign_update('signing string')
+		self.moreinfo = SignEVP.sign_final().encode('base64')
+		
+		self.label_wid.text = 'My label after button press'
+		self.otherlabel_wid.text = self.moreinfo
+		self.info = 'New info text'
 	    
 
 class ControllerApp(App):
